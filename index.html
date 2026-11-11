@@ -28,9 +28,9 @@ $("go").disabled=true;try{await signInWithEmailAndPassword(auth,c+D,p)}catch{$("
 $("out").onclick=()=>signOut(auth);
 onAuthStateChanged(auth,async u=>{un.forEach(f=>f());un=[];msgs.clear();reads.clear();
  if(!u){$("mv").classList.add("hide");$("lv").classList.remove("hide");return}
- me=u.email.split("@")[0];if(me==="admin"){location.href="admin.html";return}
+ me=u.email.split("@")[0];if(me==="admin"){location.href="admin/";return}
  $("lv").classList.add("hide");$("mv").classList.remove("hide");$("nm").textContent="رسائلي";$("cd").textContent="كود "+me;
- getDoc(doc(db,"employees",me)).then(s=>{if(s.exists()&&s.data().name)$("nm").textContent="أهلاً، "+s.data().name}).catch(()=>{});
+ getDoc(doc(db,"employees",me)).then(s=>{const d=s.exists()?s.data():{};if(d.active===false){signOut(auth).then(()=>{$("err").textContent="هذا الحساب موقوف. تواصل مع الإدارة."});return}if(d.name)$("nm").textContent="أهلاً، "+d.name}).catch(()=>{});
  for(const v of["all",me])un.push(onSnapshot(query(collection(db,"messages"),where("to","==",v)),s=>{s.docChanges().forEach(c=>c.type==="removed"?msgs.delete(c.doc.id):msgs.set(c.doc.id,c.doc.data()));draw()},()=>{$("list").replaceChildren(el("div","empty","تعذر تحميل الرسائل. تأكد من الاتصال وحاول مرة أخرى."))}));
  un.push(onSnapshot(query(collection(db,"reads"),where("code","==",me)),s=>{reads=new Set(s.docs.map(d=>d.data().m));draw()}))});
 const T=m=>m.createdAt?.toMillis?.()??Date.now();
