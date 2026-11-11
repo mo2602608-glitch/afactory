@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f766e">
+<title>لوحة الإدارة</title>
+<style>
+:root{--bg:#f1f5f4;--card:#fff;--ink:#12201e;--mute:#6b7c79;--brand:#0f766e;--brand2:#14b8a6;--line:#e2eae8}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1514;--card:#16201f;--ink:#e8f1ef;--mute:#8fa5a1;--line:#233130}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.hide{display:none!important}
+.wrap{max-width:680px;margin:0 auto;padding:16px}
+header{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;padding:18px;border-radius:0 0 24px 24px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.card h2{margin:0 0 10px;font-size:17px}
+label{display:block;font-size:14px;color:var(--mute);margin:10px 0 6px}
+input,select,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:var(--bg);color:var(--ink);font-family:inherit}
+textarea{min-height:110px}
+.btn{border:0;border-radius:12px;padding:13px 18px;font-size:16px;font-weight:600;background:var(--brand);color:#fff;width:100%;margin-top:12px;cursor:pointer}
+.btn.sm{width:auto;padding:6px 12px;font-size:13px;margin:0;background:#dc2626}
+.btn.ghost{background:rgba(255,255,255,.2);width:auto;margin:0;padding:8px 14px;font-size:14px}
+.note{color:var(--mute);font-size:13px;line-height:1.6}
+.ok{color:#059669}.bad{color:#dc2626}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row b{display:block}
+.row span{color:var(--mute);font-size:13px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+
+<div id="loginView" class="wrap">
+  <div class="card">
+    <h2>دخول المسؤول</h2>
+    <label>كلمة المرور</label>
+    <input id="pw" type="password">
+    <p class="note bad" id="lerr"></p>
+    <button class="btn" id="loginBtn">دخول</button>
+  </div>
+</div>
+
+<div id="mainView" class="hide">
+  <header><h1>لوحة الإدارة</h1><button class="btn ghost" id="logout">خروج</button></header>
+  <div class="wrap">
+
+    <div class="card">
+      <h2>إرسال رسالة</h2>
+      <label>إلى</label>
+      <select id="to"><option value="all">كل الموظفين</option></select>
+      <label>العنوان</label>
+      <input id="title">
+      <label>نص الرسالة</label>
+      <textarea id="body"></textarea>
+      <p class="note" id="sendStatus"></p>
+      <button class="btn" id="send">إرسال</button>
+    </div>
+
+    <div class="card">
+      <h2>إضافة موظفين</h2>
+      <p class="note">اكتب كل موظف في سطر بهذا الشكل: كود,الاسم,رقم الموبايل<br>مثال: 1001,أحمد محمد,01012345678</p>
+      <textarea id="emps" placeholder="1001,أحمد محمد,01012345678"></textarea>
+      <p class="note" id="empStatus"></p>
+      <button class="btn" id="addEmps">إضافة</button>
+    </div>
+
+    <div class="card"><h2>الموظفين (<span id="ecount">0</span>)</h2><div id="elist"></div></div>
+    <div class="card"><h2>الرسائل المرسلة</h2><div id="mlist"></div></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, setDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const cfg = {
+  apiKey: "AIzaSyC2gLmbGX8umoGdewm3ZfEVacHPUSuFefo",
+  authDomain: "afactory-messages.firebaseapp.com",
+  projectId: "afactory-messages",
+  storageBucket: "afactory-messages.firebasestorage.app",
+  messagingSenderId: "500605984674",
+  appId: "1:500605984674:web:c5296569b2fd7a3d6c5cfb"
+};
+const app = initializeApp(cfg), auth = getAuth(app), db = getFirestore(app);
+const $ = id => document.getElementById(id);
+const DOMAIN = "@afactory.app";
+const toEn = s => s.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).trim();
+let unsubs = [];
+
+$("loginBtn").onclick = async () => {
+  $("lerr").textContent = "";
+  try { await signInWithEmailAndPassword(auth, "admin" + DOMAIN, $("pw").value); }
+  catch { $("lerr").textContent = "كلمة المرور غير صحيحة"; }
+};
+$("logout").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, user => {
+  unsubs.forEach(u => u()); unsubs = [];
+  const isAdmin = user && user.email === "admin" + DOMAIN;
+  $("loginView").classList.toggle("hide", !!isAdmin);
+  $("mainView").classList.toggle("hide", !isAdmin);
+  if (user && !isAdmin) { signOut(auth); return; }
+  if (!isAdmin) return;
+
+  unsubs.push(onSnapshot(collection(db, "employees"), snap => {
+    const emps = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+    $("ecount").textContent = emps.length;
+    const sel = $("to"), cur = sel.value;
+    sel.innerHTML = '<option value="all">كل الموظفين</option>';
+    emps.forEach(e => sel.appendChild(Object.assign(document.createElement("option"), { value: e.id, textContent: e.id + " - " + (e.name || "") })));
+    sel.value = cur || "all";
+    const list = $("elist"); list.innerHTML = "";
+    emps.forEach(e => {
+      const r = document.createElement("div"); r.className = "row";
+      const info = document.createElement("div");
+      info.appendChild(Object.assign(document.createElement("b"), { textContent: e.name || "" }));
+      info.appendChild(Object.assign(document.createElement("span"), { textContent: e.id + " • " + (e.phone || "") }));
+      r.appendChild(info); list.appendChild(r);
+    });
+  }));
+
+  unsubs.push(onSnapshot(collection(db, "messages"), snap => {
+    const ms = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+    const list = $("mlist"); list.innerHTML = "";
+    if (!ms.length) list.textContent = "لا توجد رسائل";
+    ms.forEach(m => {
+      const r = document.createElement("div"); r.className = "row";
+      const info = document.createElement("div");
+      info.appendChild(Object.assign(document.createElement("b"), { textContent: m.title || "" }));
+      info.appendChild(Object.assign(document.createElement("span"), { textContent: "إلى: " + (m.to === "all" ? "الكل" : m.to) + "\n" + (m.body || "") }));
+      const del = Object.assign(document.createElement("button"), { className: "btn sm", textContent: "حذف" });
+      del.onclick = () => confirm("حذف الرسالة؟") && deleteDoc(doc(db, "messages", m.id));
+      r.appendChild(info); r.appendChild(del); list.appendChild(r);
+    });
+  }));
+});
+
+$("send").onclick = async () => {
+  const title = $("title").value.trim(), body = $("body").value.trim();
+  if (!title || !body) { $("sendStatus").textContent = "اكتب العنوان والنص"; return; }
+  try {
+    await addDoc(collection(db, "messages"), { to: $("to").value, title, body, createdAt: serverTimestamp() });
+    $("title").value = ""; $("body").value = "";
+    $("sendStatus").innerHTML = '<span class="ok">تم الإرسال</span>';
+  } catch { $("sendStatus").innerHTML = '<span class="bad">فشل الإرسال</span>'; }
+};
+
+$("addEmps").onclick = async () => {
+  const lines = $("emps").value.split("\n").map(l => l.trim()).filter(Boolean);
+  if (!lines.length) return;
+  const second = initializeApp(cfg, "second" + Date.now()), sAuth = getAuth(second);
+  let ok = 0, fail = [];
+  for (const line of lines) {
+    const [c, n, p] = line.split(/[,،\t]/).map(x => toEn(x || ""));
+    if (!c || !p || p.length < 6) { fail.push(line + " (بيانات ناقصة)"); continue; }
+    try {
+      await createUserWithEmailAndPassword(sAuth, c + DOMAIN, p);
+      await signOut(sAuth);
+    } catch (e) {
+      if (e.code !== "auth/email-already-in-use") { fail.push(c + " (" + e.code + ")"); continue; }
+    }
+    try { await setDoc(doc(db, "employees", c), { name: n || "", phone: p }); ok++; }
+    catch { fail.push(c + " (فشل الحفظ)"); }
+  }
+  $("empStatus").innerHTML = '<span class="ok">تمت إضافة ' + ok + '</span>' + (fail.length ? '<br><span class="bad">لم تتم: ' + fail.join("، ") + '</span>' : "");
+  if (!fail.length) $("emps").value = "";
+};
+</script>
+</body>
+</html>
