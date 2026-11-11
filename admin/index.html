@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17212b"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css"><title>إدارة رسائل المصنع</title></head><body>
+<section id="lv" class="wrap" style="margin-top:12vh"><h1 style="margin:0 0 16px">دخول المسؤول</h1>
+ <div class="panel"><label>كلمة المرور</label><input id="pw" type="password" autocomplete="current-password"><p class="err" id="le"></p><button class="btn" id="go" style="margin-top:4px">دخول</button></div></section>
+<section id="mv" class="hide">
+ <div class="bar"><div><h1>إدارة المصنع</h1><small id="sum"></small></div><button class="btn out" id="out">خروج</button></div>
+ <div class="tabs" id="tabs"><button data-t="s" class="on">رسالة جديدة</button><button data-t="m">المرسلة</button><button data-t="e">الموظفون</button></div>
+ <div class="wrap">
+  <div id="t-s"><div class="panel" id="comp"></div></div>
+  <div id="t-m" class="hide"></div>
+  <div id="t-e" class="hide"><div class="panel"><label>إضافة موظفين (سطر لكل موظف: كود،الاسم،الموبايل)</label><textarea id="emps" placeholder="1001,أحمد محمد,01012345678"></textarea><p class="err" id="ee"></p><button class="btn" id="add" style="margin-top:4px">إضافة</button></div>
+   <input id="q" placeholder="ابحث بالاسم أو الكود" style="margin-bottom:12px"><div id="el"></div></div>
+ </div></section>
+<div class="modal hide" id="md"><div class="panel" id="mb"></div></div><div class="toast hide" id="toast"></div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,createUserWithEmailAndPassword}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import{getFirestore,collection,addDoc,setDoc,updateDoc,deleteDoc,doc,onSnapshot,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const cfg={apiKey:"AIzaSyC2gLmbGX8umoGdewm3ZfEVacHPUSuFefo",authDomain:"afactory-messages.firebaseapp.com",projectId:"afactory-messages",storageBucket:"afactory-messages.firebasestorage.app",messagingSenderId:"500605984674",appId:"1:500605984674:web:c5296569b2fd7a3d6c5cfb"};
+const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app),$=i=>document.getElementById(i),D="@afactory.app";
+const en=s=>s.replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).trim();
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const toast=t=>{const e=$("toast");e.textContent=t;e.classList.remove("hide");setTimeout(()=>e.classList.add("hide"),2500)};
+const btn=(t,c,f)=>{const b=el("button","btn sm "+c,t);b.onclick=f;return b};
+const close=()=>$("md").classList.add("hide");$("md").onclick=e=>{if(e.target===$("md"))close()};
+const modal=f=>{$("mb").replaceChildren();f($("mb"));$("md").classList.remove("hide")};
+const T=m=>m.createdAt?.toMillis?.()??Date.now();
+let un=[],emps=[],msgs=[],rc={};
+$("go").onclick=async()=>{$("le").textContent="";try{await signInWithEmailAndPassword(auth,"admin"+D,$("pw").value)}catch{$("le").textContent="كلمة المرور غير صحيحة"}};
+$("out").onclick=()=>signOut(auth);
+$("tabs").onclick=e=>{const t=e.target.dataset.t;if(!t)return;[...$("tabs").children].forEach(b=>b.classList.toggle("on",b===e.target));["s","m","e"].forEach(k=>$("t-"+k).classList.toggle("hide",k!==t))};
+// نموذج الرسالة (جديدة أو تعديل)
+function form(host,m,done){const opts=[new Option("كل الموظفين","all"),...emps.map(e=>new Option(e.id+" - "+(e.name||""),e.id))];
+ const to=el("select");to.append(...opts);to.value=m?.to||"all";const nm="p"+Math.random();
+ const seg=el("div","seg");[["0","عادي"],["1","مهم"],["2","عاجل"]].forEach(([v,t])=>{const l=el("label"),i=el("input");i.type="radio";i.name=nm;i.value=v;i.checked=String(m?.p||0)===v;l.append(i,el("span","",t));seg.appendChild(l)});
+ const ti=el("input");ti.value=m?.title||"";const bo=el("textarea");bo.value=m?.body||"";
+ const ok=el("button","btn",m?"حفظ التعديل":"إرسال الرسالة");
+ ok.onclick=async()=>{if(!ti.value.trim()||!bo.value.trim()){toast("اكتب العنوان ونص الرسالة");return}
+  const d={to:to.value,p:+seg.querySelector("input:checked").value,title:ti.value.trim(),body:bo.value.trim()};
+  try{m?await updateDoc(doc(db,"messages",m.id),d):await addDoc(collection(db,"messages"),{...d,createdAt:serverTimestamp()});toast(m?"تم حفظ التعديل":"تم إرسال الرسالة");done()}catch{toast("تعذر الحفظ. حاول مرة أخرى")}};
+ const L=(t,x)=>[el("label","",t),x];host.append(...L("إلى",to),el("label","","الأهمية"),seg,...L("العنوان",ti),...L("نص الرسالة",bo),ok)}
+function drawC(){if($("comp").contains(document.activeElement))return;$("comp").replaceChildren();form($("comp"),null,()=>drawC())}
+function drawM(){$("sum").textContent=emps.length+" موظف • "+msgs.length+" رسالة";const L=$("t-m");L.replaceChildren();
+ if(!msgs.length){L.appendChild(el("div","empty","لم ترسل أي رسالة بعد."));return}
+ msgs.forEach(m=>{const c=el("div","card p"+(m.p||0)),r=el("div","row");r.append(el("h3","",m.title||""),m.p?el("span","tag p"+m.p,m.p===2?"عاجل":"مهم"):el("span"));
+  const tot=m.to==="all"?emps.filter(e=>e.active!==false).length:1,n=(rc[m.id]||new Set()).size,p=el("p","",m.body||"");p.style.webkitLineClamp=3;
+  c.append(r,p,el("div","meta","إلى: "+(m.to==="all"?"الكل":m.to)+" • قرأها "+n+" من "+tot+" • "+new Date(T(m)).toLocaleDateString("ar-EG")),
+   (()=>{const a=el("div","acts");a.append(btn("من قرأ؟","n",()=>readers(m)),btn("تعديل","n",()=>modal(h=>{h.appendChild(el("h2","","تعديل الرسالة"));form(h,m,close)})),btn("حذف","",()=>confirm("حذف الرسالة؟")&&deleteDoc(doc(db,"messages",m.id)).then(()=>toast("تم الحذف"))));return a})());L.appendChild(c)})}
+function readers(m){const t=m.to==="all"?emps:emps.filter(e=>e.id===m.to),s=rc[m.id]||new Set();
+ modal(h=>{h.appendChild(el("h2","","من قرأ الرسالة"));[["قرأوها",t.filter(e=>s.has(e.id))],["لم يقرأوها",t.filter(e=>!s.has(e.id))]].forEach(([k,l])=>{h.appendChild(el("label","",k+" ("+l.length+")"));
+  h.appendChild(el("div","",l.map(e=>e.name||e.id).join("، ")||"لا أحد"))});h.appendChild(btn("إغلاق","n",close)).style.marginTop="16px"})}
+function drawE(){const q=en($("q").value).toLowerCase(),L=$("el");L.replaceChildren();
+ const l=emps.filter(e=>!q||e.id.toLowerCase().includes(q)||(e.name||"").toLowerCase().includes(q));
+ if(!l.length){L.appendChild(el("div","empty",emps.length?"لا نتائج مطابقة.":"أضف أول موظف من النموذج أعلاه."));return}
+ l.forEach(e=>{const c=el("div","card"+(e.active===false?" off":"")),r=el("div","row");r.append(el("h3","",e.name||"بدون اسم"),el("span","meta","كود "+e.id+(e.active===false?" • موقوف":"")));
+  const a=el("div","acts");a.append(btn("تعديل","n",()=>editE(e)),btn(e.active===false?"تفعيل":"إيقاف","n",()=>updateDoc(doc(db,"employees",e.id),{active:e.active===false}).then(()=>toast("تم التحديث"))));
+  c.append(r,el("div","meta",e.phone||""),a);L.appendChild(c)})}
+function editE(e){modal(h=>{h.appendChild(el("h2","","تعديل موظف"));const n=el("input");n.value=e.name||"";
+ h.append(el("label","","الاسم"),n,el("p","meta","كود "+e.id+" • الموبايل "+(e.phone||"")+"\nالموبايل هو كلمة مرور الدخول، ولتغييره احذف الموظف من Authentication في Firebase ثم أضفه من جديد."));
+ const s=el("button","btn","حفظ");s.onclick=()=>updateDoc(doc(db,"employees",e.id),{name:n.value.trim()}).then(()=>{toast("تم الحفظ");close()});
+ const d=el("button","btn out red","حذف سجل الموظف");d.style.cssText="width:100%;margin-top:10px;padding:12px";d.onclick=()=>confirm("حذف سجل "+(e.name||e.id)+"؟ سيتوقف ظهوره في القوائم.")&&deleteDoc(doc(db,"employees",e.id)).then(()=>{toast("تم الحذف");close()});h.append(s,d)})}
+$("q").oninput=drawE;
+$("add").onclick=async()=>{const lines=$("emps").value.split("\n").map(l=>l.trim()).filter(Boolean);if(!lines.length)return;
+ const sa=getAuth(initializeApp(cfg,"s"+Date.now()));let ok=0,bad=[];
+ for(const ln of lines){const[c,n,p]=ln.split(/[,،\t]/).map(x=>en(x||""));if(!c||!p||p.length<6){bad.push(ln);continue}
+  try{await createUserWithEmailAndPassword(sa,c+D,p);await signOut(sa)}catch(x){if(x.code!=="auth/email-already-in-use"){bad.push(c);continue}
+   try{await signInWithEmailAndPassword(sa,c+D,p);await signOut(sa)}catch{bad.push(c+" (الحساب القديم بموبايل مختلف)");continue}}
+  try{await setDoc(doc(db,"employees",c),{name:n||"",phone:p,active:true});ok++}catch{bad.push(c)}}
+ $("ee").textContent=bad.length?"تعذرت إضافة: "+bad.join("، "):"";toast("تمت إضافة "+ok+" موظف");if(!bad.length)$("emps").value=""};
+onAuthStateChanged(auth,u=>{un.forEach(f=>f());un=[];const ok=u&&u.email==="admin"+D;
+ $("lv").classList.toggle("hide",!!ok);$("mv").classList.toggle("hide",!ok);if(u&&!ok){signOut(auth);return}if(!ok)return;
+ un.push(onSnapshot(collection(db,"employees"),s=>{emps=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));drawC();drawE();drawM()}));
+ un.push(onSnapshot(collection(db,"messages"),s=>{msgs=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>T(b)-T(a));drawM()}));
+ un.push(onSnapshot(collection(db,"reads"),s=>{rc={};s.docs.forEach(d=>{const{m,code}=d.data();(rc[m]??=new Set()).add(code)});drawM()}))});
+</script></body></html>
