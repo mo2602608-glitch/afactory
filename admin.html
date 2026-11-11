@@ -1,173 +1,58 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#0f766e">
-<title>لوحة الإدارة</title>
-<style>
-:root{--bg:#f1f5f4;--card:#fff;--ink:#12201e;--mute:#6b7c79;--brand:#0f766e;--brand2:#14b8a6;--line:#e2eae8}
-@media(prefers-color-scheme:dark){:root{--bg:#0e1514;--card:#16201f;--ink:#e8f1ef;--mute:#8fa5a1;--line:#233130}}
-*{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
-.hide{display:none!important}
-.wrap{max-width:680px;margin:0 auto;padding:16px}
-header{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;padding:18px;border-radius:0 0 24px 24px;display:flex;justify-content:space-between;align-items:center}
-header h1{margin:0;font-size:20px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
-.card h2{margin:0 0 10px;font-size:17px}
-label{display:block;font-size:14px;color:var(--mute);margin:10px 0 6px}
-input,select,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:var(--bg);color:var(--ink);font-family:inherit}
-textarea{min-height:110px}
-.btn{border:0;border-radius:12px;padding:13px 18px;font-size:16px;font-weight:600;background:var(--brand);color:#fff;width:100%;margin-top:12px;cursor:pointer}
-.btn.sm{width:auto;padding:6px 12px;font-size:13px;margin:0;background:#dc2626}
-.btn.ghost{background:rgba(255,255,255,.2);width:auto;margin:0;padding:8px 14px;font-size:14px}
-.note{color:var(--mute);font-size:13px;line-height:1.6}
-.ok{color:#059669}.bad{color:#dc2626}
-.row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
-.row:first-of-type{border-top:0}
-.row b{display:block}
-.row span{color:var(--mute);font-size:13px;white-space:pre-wrap}
-</style>
-</head>
-<body>
-
-<div id="loginView" class="wrap">
-  <div class="card">
-    <h2>دخول المسؤول</h2>
-    <label>كلمة المرور</label>
-    <input id="pw" type="password">
-    <p class="note bad" id="lerr"></p>
-    <button class="btn" id="loginBtn">دخول</button>
-  </div>
-</div>
-
-<div id="mainView" class="hide">
-  <header><h1>لوحة الإدارة</h1><button class="btn ghost" id="logout">خروج</button></header>
-  <div class="wrap">
-
-    <div class="card">
-      <h2>إرسال رسالة</h2>
-      <label>إلى</label>
-      <select id="to"><option value="all">كل الموظفين</option></select>
-      <label>العنوان</label>
-      <input id="title">
-      <label>نص الرسالة</label>
-      <textarea id="body"></textarea>
-      <p class="note" id="sendStatus"></p>
-      <button class="btn" id="send">إرسال</button>
-    </div>
-
-    <div class="card">
-      <h2>إضافة موظفين</h2>
-      <p class="note">اكتب كل موظف في سطر بهذا الشكل: كود,الاسم,رقم الموبايل<br>مثال: 1001,أحمد محمد,01012345678</p>
-      <textarea id="emps" placeholder="1001,أحمد محمد,01012345678"></textarea>
-      <p class="note" id="empStatus"></p>
-      <button class="btn" id="addEmps">إضافة</button>
-    </div>
-
-    <div class="card"><h2>الموظفين (<span id="ecount">0</span>)</h2><div id="elist"></div></div>
-    <div class="card"><h2>الرسائل المرسلة</h2><div id="mlist"></div></div>
-  </div>
-</div>
-
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1d4e89">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"><title>لوحة الإدارة</title></head><body>
+<section id="lv" class="wrap" style="margin-top:12vh"><h1 style="margin:0 0 16px">دخول المسؤول</h1>
+ <div class="panel"><label>كلمة المرور</label><input id="pw" type="password" autocomplete="current-password"><p class="err" id="le"></p><button class="btn" id="go" style="margin-top:4px">دخول</button></div></section>
+<section id="mv" class="hide">
+ <div class="bar"><div><h1>لوحة الإدارة</h1><small id="sum"></small></div><button class="btn out" id="out">خروج</button></div>
+ <div class="tabs" id="tabs"><button data-t="s" class="on">رسالة جديدة</button><button data-t="m">المرسلة</button><button data-t="e">الموظفون</button></div>
+ <div class="wrap">
+  <div id="t-s"><div class="panel"><label>إلى</label><select id="to"><option value="all">كل الموظفين</option></select>
+   <label>الأهمية</label><div class="seg"><label><input type="radio" name="p" value="0" checked><span>عادي</span></label><label><input type="radio" name="p" value="1"><span>مهم</span></label><label><input type="radio" name="p" value="2"><span>عاجل</span></label></div>
+   <label>العنوان</label><input id="ti"><label>نص الرسالة</label><textarea id="bo"></textarea><button class="btn" id="send">إرسال الرسالة</button></div></div>
+  <div id="t-m" class="hide"></div>
+  <div id="t-e" class="hide"><div class="panel"><label>إضافة موظفين (سطر لكل موظف: كود،الاسم،الموبايل)</label><textarea id="emps" placeholder="1001,أحمد محمد,01012345678"></textarea><p class="err" id="ee"></p><button class="btn" id="add" style="margin-top:4px">إضافة</button></div>
+   <input id="q" placeholder="ابحث بالاسم أو الكود" style="margin-bottom:12px"><div id="el"></div></div>
+ </div></section><div class="toast hide" id="toast"></div>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, setDoc, deleteDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-
-const cfg = {
-  apiKey: "AIzaSyC2gLmbGX8umoGdewm3ZfEVacHPUSuFefo",
-  authDomain: "afactory-messages.firebaseapp.com",
-  projectId: "afactory-messages",
-  storageBucket: "afactory-messages.firebasestorage.app",
-  messagingSenderId: "500605984674",
-  appId: "1:500605984674:web:c5296569b2fd7a3d6c5cfb"
-};
-const app = initializeApp(cfg), auth = getAuth(app), db = getFirestore(app);
-const $ = id => document.getElementById(id);
-const DOMAIN = "@afactory.app";
-const toEn = s => s.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).trim();
-let unsubs = [];
-
-$("loginBtn").onclick = async () => {
-  $("lerr").textContent = "";
-  try { await signInWithEmailAndPassword(auth, "admin" + DOMAIN, $("pw").value); }
-  catch { $("lerr").textContent = "كلمة المرور غير صحيحة"; }
-};
-$("logout").onclick = () => signOut(auth);
-
-onAuthStateChanged(auth, user => {
-  unsubs.forEach(u => u()); unsubs = [];
-  const isAdmin = user && user.email === "admin" + DOMAIN;
-  $("loginView").classList.toggle("hide", !!isAdmin);
-  $("mainView").classList.toggle("hide", !isAdmin);
-  if (user && !isAdmin) { signOut(auth); return; }
-  if (!isAdmin) return;
-
-  unsubs.push(onSnapshot(collection(db, "employees"), snap => {
-    const emps = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
-    $("ecount").textContent = emps.length;
-    const sel = $("to"), cur = sel.value;
-    sel.innerHTML = '<option value="all">كل الموظفين</option>';
-    emps.forEach(e => sel.appendChild(Object.assign(document.createElement("option"), { value: e.id, textContent: e.id + " - " + (e.name || "") })));
-    sel.value = cur || "all";
-    const list = $("elist"); list.innerHTML = "";
-    emps.forEach(e => {
-      const r = document.createElement("div"); r.className = "row";
-      const info = document.createElement("div");
-      info.appendChild(Object.assign(document.createElement("b"), { textContent: e.name || "" }));
-      info.appendChild(Object.assign(document.createElement("span"), { textContent: e.id + " • " + (e.phone || "") }));
-      r.appendChild(info); list.appendChild(r);
-    });
-  }));
-
-  unsubs.push(onSnapshot(collection(db, "messages"), snap => {
-    const ms = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
-    const list = $("mlist"); list.innerHTML = "";
-    if (!ms.length) list.textContent = "لا توجد رسائل";
-    ms.forEach(m => {
-      const r = document.createElement("div"); r.className = "row";
-      const info = document.createElement("div");
-      info.appendChild(Object.assign(document.createElement("b"), { textContent: m.title || "" }));
-      info.appendChild(Object.assign(document.createElement("span"), { textContent: "إلى: " + (m.to === "all" ? "الكل" : m.to) + "\n" + (m.body || "") }));
-      const del = Object.assign(document.createElement("button"), { className: "btn sm", textContent: "حذف" });
-      del.onclick = () => confirm("حذف الرسالة؟") && deleteDoc(doc(db, "messages", m.id));
-      r.appendChild(info); r.appendChild(del); list.appendChild(r);
-    });
-  }));
-});
-
-$("send").onclick = async () => {
-  const title = $("title").value.trim(), body = $("body").value.trim();
-  if (!title || !body) { $("sendStatus").textContent = "اكتب العنوان والنص"; return; }
-  try {
-    await addDoc(collection(db, "messages"), { to: $("to").value, title, body, createdAt: serverTimestamp() });
-    $("title").value = ""; $("body").value = "";
-    $("sendStatus").innerHTML = '<span class="ok">تم الإرسال</span>';
-  } catch { $("sendStatus").innerHTML = '<span class="bad">فشل الإرسال</span>'; }
-};
-
-$("addEmps").onclick = async () => {
-  const lines = $("emps").value.split("\n").map(l => l.trim()).filter(Boolean);
-  if (!lines.length) return;
-  const second = initializeApp(cfg, "second" + Date.now()), sAuth = getAuth(second);
-  let ok = 0, fail = [];
-  for (const line of lines) {
-    const [c, n, p] = line.split(/[,،\t]/).map(x => toEn(x || ""));
-    if (!c || !p || p.length < 6) { fail.push(line + " (بيانات ناقصة)"); continue; }
-    try {
-      await createUserWithEmailAndPassword(sAuth, c + DOMAIN, p);
-      await signOut(sAuth);
-    } catch (e) {
-      if (e.code !== "auth/email-already-in-use") { fail.push(c + " (" + e.code + ")"); continue; }
-    }
-    try { await setDoc(doc(db, "employees", c), { name: n || "", phone: p }); ok++; }
-    catch { fail.push(c + " (فشل الحفظ)"); }
-  }
-  $("empStatus").innerHTML = '<span class="ok">تمت إضافة ' + ok + '</span>' + (fail.length ? '<br><span class="bad">لم تتم: ' + fail.join("، ") + '</span>' : "");
-  if (!fail.length) $("emps").value = "";
-};
-</script>
-</body>
-</html>
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,createUserWithEmailAndPassword}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import{getFirestore,collection,addDoc,setDoc,deleteDoc,doc,onSnapshot,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const cfg={apiKey:"AIzaSyC2gLmbGX8umoGdewm3ZfEVacHPUSuFefo",authDomain:"afactory-messages.firebaseapp.com",projectId:"afactory-messages",storageBucket:"afactory-messages.firebasestorage.app",messagingSenderId:"500605984674",appId:"1:500605984674:web:c5296569b2fd7a3d6c5cfb"};
+const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app),$=i=>document.getElementById(i),D="@afactory.app";
+const en=s=>s.replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).trim();
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const toast=t=>{const e=$("toast");e.textContent=t;e.classList.remove("hide");setTimeout(()=>e.classList.add("hide"),2500)};
+let un=[],emps=[],msgs=[],rc={};
+$("go").onclick=async()=>{$("le").textContent="";try{await signInWithEmailAndPassword(auth,"admin"+D,$("pw").value)}catch{$("le").textContent="كلمة المرور غير صحيحة"}};
+$("out").onclick=()=>signOut(auth);
+$("tabs").onclick=e=>{const t=e.target.dataset.t;if(!t)return;[...$("tabs").children].forEach(b=>b.classList.toggle("on",b===e.target));["s","m","e"].forEach(k=>$("t-"+k).classList.toggle("hide",k!==t))};
+onAuthStateChanged(auth,u=>{un.forEach(f=>f());un=[];const ok=u&&u.email==="admin"+D;
+ $("lv").classList.toggle("hide",!!ok);$("mv").classList.toggle("hide",!ok);if(u&&!ok){signOut(auth);return}if(!ok)return;
+ un.push(onSnapshot(collection(db,"employees"),s=>{emps=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
+  const sel=$("to"),cur=sel.value;sel.replaceChildren(new Option("كل الموظفين","all"),...emps.map(e=>new Option(e.id+" - "+(e.name||""),e.id)));sel.value=cur||"all";drawE();drawM()}));
+ un.push(onSnapshot(collection(db,"messages"),s=>{msgs=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.toMillis?.()??Date.now())-(a.createdAt?.toMillis?.()??Date.now()));drawM()}));
+ un.push(onSnapshot(collection(db,"reads"),s=>{rc={};s.docs.forEach(d=>{const m=d.data().m;rc[m]=(rc[m]||0)+1});drawM()}))});
+function drawM(){$("sum").textContent=emps.length+" موظف • "+msgs.length+" رسالة";const L=$("t-m");L.replaceChildren();
+ if(!msgs.length){L.appendChild(el("div","empty","لم ترسل أي رسالة بعد."));return}
+ msgs.forEach(m=>{const c=el("div","card p"+(m.p||0)),r=el("div","row");r.append(el("h3","",m.title||""),(m.p?el("span","tag p"+m.p,m.p===2?"عاجل":"مهم"):el("span")));
+  const tot=m.to==="all"?emps.length:1,n=rc[m.id]||0,f=el("div","row"),i=el("div","meta","إلى: "+(m.to==="all"?"الكل":m.to)+" • قرأها "+n+" من "+tot);
+  const d=el("button","btn sm","حذف");d.onclick=()=>confirm("حذف الرسالة؟")&&deleteDoc(doc(db,"messages",m.id)).then(()=>toast("تم الحذف"));
+  f.append(i,d);c.append(r,el("p","",m.body||""),f);c.querySelector("p").style.webkitLineClamp="3";L.appendChild(c)})}
+function drawE(){const q=en($("q").value).toLowerCase(),L=$("el");L.replaceChildren();
+ const l=emps.filter(e=>!q||e.id.toLowerCase().includes(q)||(e.name||"").toLowerCase().includes(q));
+ if(!l.length){L.appendChild(el("div","empty",emps.length?"لا نتائج مطابقة.":"أضف أول موظف من النموذج أعلاه."));return}
+ l.forEach(e=>{const c=el("div","card"),r=el("div","row");r.append(el("h3","",e.name||"بدون اسم"),el("span","meta","كود "+e.id));c.append(r,el("div","meta",e.phone||""));L.appendChild(c)})}
+$("q").oninput=drawE;
+$("send").onclick=async()=>{const ti=$("ti").value.trim(),bo=$("bo").value.trim();if(!ti||!bo){toast("اكتب العنوان ونص الرسالة");return}
+ try{await addDoc(collection(db,"messages"),{to:$("to").value,p:+document.querySelector('input[name=p]:checked').value,title:ti,body:bo,createdAt:serverTimestamp()});$("ti").value="";$("bo").value="";toast("تم إرسال الرسالة")}catch{toast("تعذر الإرسال. حاول مرة أخرى")}};
+$("add").onclick=async()=>{const lines=$("emps").value.split("\n").map(l=>l.trim()).filter(Boolean);if(!lines.length)return;
+ const sa=getAuth(initializeApp(cfg,"s"+Date.now()));let ok=0,bad=[];
+ for(const ln of lines){const[c,n,p]=ln.split(/[,،\t]/).map(x=>en(x||""));if(!c||!p||p.length<6){bad.push(ln);continue}
+  try{await createUserWithEmailAndPassword(sa,c+D,p);await signOut(sa)}catch(e){if(e.code!=="auth/email-already-in-use"){bad.push(c);continue}}
+  try{await setDoc(doc(db,"employees",c),{name:n||"",phone:p});ok++}catch{bad.push(c)}}
+ $("ee").textContent=bad.length?"تعذرت إضافة: "+bad.join("، "):"";toast("تمت إضافة "+ok+" موظف");if(!bad.length)$("emps").value=""};
+</script></body></html>

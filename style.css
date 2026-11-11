@@ -1,0 +1,39 @@
+:root{--bg:#f2f4f1;--card:#fff;--ink:#17212b;--mute:#667585;--line:#dde3e7;--pri:#1d4e89;--p1:#c98a00;--p2:#d9480f;--ok:#2b8a3e}
+@media(prefers-color-scheme:dark){:root{--bg:#10161d;--card:#18212b;--ink:#e9eef2;--mute:#8d9cab;--line:#263341;--pri:#3a78bd;--p1:#e0a526;--p2:#f26a2e;--ok:#4cc16a}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,Tahoma,sans-serif;line-height:1.6;padding-bottom:env(safe-area-inset-bottom)}
+.hide{display:none!important}
+.bar{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.bar h1{margin:0;font-size:18px;font-weight:700}.bar small{display:block;color:var(--mute);font-size:13px}
+.wrap{max-width:640px;margin:0 auto;padding:16px}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);outline:0}
+input:focus,select:focus,textarea:focus,button:focus-visible{border-color:var(--pri);outline:2px solid var(--pri);outline-offset:1px}
+textarea{min-height:120px;resize:vertical}
+label{display:block;font-size:14px;color:var(--mute);margin:14px 0 6px}
+.btn{width:100%;border:0;border-radius:10px;padding:14px;font-weight:700;background:var(--pri);color:#fff;cursor:pointer;margin-top:16px}
+.btn:disabled{opacity:.6}.btn.out{background:none;border:1.5px solid var(--line);color:var(--ink);width:auto;margin:0;padding:8px 14px;font-weight:500}
+.btn.sm{width:auto;margin:0;padding:6px 12px;font-size:13px;background:none;color:var(--p2);border:1.5px solid var(--line)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:12px}
+.chip{border:1.5px solid var(--line);background:var(--card);border-radius:99px;padding:6px 14px;font-size:14px;white-space:nowrap;cursor:pointer}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;border-inline-start:6px solid var(--line)}
+.card.p1{border-inline-start-color:var(--p1)}.card.p2{border-inline-start-color:var(--p2)}
+.card h3{margin:0;font-size:16px;font-weight:500}.card.unread h3{font-weight:700}
+.card p{margin:6px 0 0;white-space:pre-wrap;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;color:var(--mute)}
+.card.open p{display:block;color:var(--ink)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.meta{font-size:12px;color:var(--mute);margin-top:8px}
+.tag{font-size:12px;font-weight:700;border-radius:6px;padding:1px 8px;color:#fff}.tag.p1{background:var(--p1)}.tag.p2{background:var(--p2)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--pri);flex:none}
+.empty{text-align:center;color:var(--mute);padding:48px 16px}
+.err{color:var(--p2);font-size:14px;min-height:22px;margin:10px 0 0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px}
+.seg{display:flex;gap:8px}.seg label{flex:1;margin:0}.seg input{display:none}
+.seg span{display:block;text-align:center;padding:10px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;color:var(--ink);cursor:pointer}
+.seg input:checked+span{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.tabs{display:flex;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:57px;z-index:4}
+.tabs button{flex:1;border:0;background:none;padding:12px 4px;font-size:15px;border-bottom:3px solid transparent;cursor:pointer;color:var(--mute)}
+.tabs button.on{color:var(--ink);font-weight:700;border-bottom-color:var(--pri)}
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);inset-inline:16px;margin:auto;max-width:360px;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:10px;text-align:center;z-index:9}
+@media(prefers-reduced-motion:no-preference){.card{transition:border-color .2s}}

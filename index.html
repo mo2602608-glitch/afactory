@@ -1,139 +1,49 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8">
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f766e">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon-192.png">
-<title>رسائل المصنع</title>
-<style>
-:root{--bg:#f1f5f4;--card:#fff;--ink:#12201e;--mute:#6b7c79;--brand:#0f766e;--brand2:#14b8a6;--line:#e2eae8}
-@media(prefers-color-scheme:dark){:root{--bg:#0e1514;--card:#16201f;--ink:#e8f1ef;--mute:#8fa5a1;--line:#233130}}
-*{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
-.hide{display:none!important}
-header{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;padding:calc(env(safe-area-inset-top,0px) + 18px) 18px 22px;border-radius:0 0 24px 24px}
-header h1{margin:0;font-size:20px}
-header p{margin:4px 0 0;opacity:.9;font-size:14px}
-.top{display:flex;justify-content:space-between;align-items:center}
-.btn{border:0;border-radius:12px;padding:13px 18px;font-size:16px;font-weight:600;background:var(--brand);color:#fff;width:100%;cursor:pointer}
-.btn.ghost{background:rgba(255,255,255,.2);width:auto;padding:8px 14px;font-size:14px}
-.login{max-width:420px;margin:40px auto;padding:0 18px}
-.login .box{background:var(--card);border-radius:20px;padding:22px;box-shadow:0 6px 24px rgba(0,0,0,.08)}
-.logo{width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,var(--brand),var(--brand2));margin:0 auto 14px;display:grid;place-items:center;font-size:36px}
-h2{text-align:center;margin:0 0 4px}
-.sub{text-align:center;color:var(--mute);margin:0 0 18px;font-size:14px}
-label{display:block;font-size:14px;color:var(--mute);margin:12px 0 6px}
-input{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:var(--bg);color:var(--ink)}
-.err{color:#dc2626;font-size:14px;min-height:20px;margin:10px 0 0;text-align:center}
-.list{padding:16px;max-width:640px;margin:0 auto}
-.msg{background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:12px;border:1px solid var(--line);position:relative}
-.msg.new{border-color:var(--brand2);box-shadow:0 0 0 2px rgba(20,184,166,.2)}
-.msg h3{margin:0 0 6px;font-size:17px}
-.msg p{margin:0;white-space:pre-wrap;line-height:1.6}
-.msg small{display:block;margin-top:8px;color:var(--mute);font-size:12px}
-.dot{position:absolute;top:14px;left:14px;width:10px;height:10px;border-radius:50%;background:var(--brand2)}
-.empty{text-align:center;color:var(--mute);padding:50px 0}
-.install{margin:12px 16px 0;padding:12px;border-radius:12px;background:var(--card);border:1px dashed var(--brand2);text-align:center;font-size:14px}
-.install button{margin-top:8px}
-</style>
-</head>
-<body>
-
-<section id="loginView" class="login hide">
-  <div class="box">
-    <div class="logo">🏭</div>
-    <h2>رسائل المصنع</h2>
-    <p class="sub">سجّل دخولك لقراءة رسائلك</p>
-    <label>كود الموظف</label>
-    <input id="code" inputmode="numeric" autocomplete="username">
-    <label>رقم الموبايل</label>
-    <input id="phone" type="tel" inputmode="numeric" autocomplete="current-password">
-    <p class="err" id="err"></p>
-    <button class="btn" id="loginBtn">دخول</button>
-  </div>
+<meta name="theme-color" content="#1d4e89"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"><title>رسائل المصنع</title></head><body>
+<section id="lv" class="wrap hide" style="margin-top:12vh">
+ <h1 style="margin:0 0 4px">رسائل المصنع</h1><p style="color:var(--mute);margin:0 0 20px">ادخل بكود الموظف ورقم الموبايل</p>
+ <div class="panel"><label>كود الموظف</label><input id="code" inputmode="numeric" autocomplete="username">
+ <label>رقم الموبايل</label><input id="phone" type="tel" inputmode="numeric" autocomplete="current-password">
+ <p class="err" id="err"></p><button class="btn" id="go" style="margin-top:4px">دخول</button></div>
 </section>
-
-<section id="mainView" class="hide">
-  <header>
-    <div class="top"><h1>رسائلي</h1><button class="btn ghost" id="logoutBtn">خروج</button></div>
-    <p id="hello"></p>
-  </header>
-  <div class="install hide" id="installBox">ثبّت التطبيق على موبايلك<br><button class="btn" id="installBtn">تثبيت</button></div>
-  <div class="list" id="list"></div>
+<section id="mv" class="hide">
+ <div class="bar"><div><h1 id="nm"></h1><small id="cd"></small></div><button class="btn out" id="out">خروج</button></div>
+ <div class="wrap"><div class="chips" id="chips"></div><div id="list"></div></div>
 </section>
-
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-
-const app = initializeApp({
-  apiKey: "AIzaSyC2gLmbGX8umoGdewm3ZfEVacHPUSuFefo",
-  authDomain: "afactory-messages.firebaseapp.com",
-  projectId: "afactory-messages",
-  storageBucket: "afactory-messages.firebasestorage.app",
-  messagingSenderId: "500605984674",
-  appId: "1:500605984674:web:c5296569b2fd7a3d6c5cfb"
-});
-const auth = getAuth(app), db = getFirestore(app);
-const $ = id => document.getElementById(id);
-const DOMAIN = "@afactory.app";
-const toEn = s => s.replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).trim();
-
-let unsubs = [], store = new Map(), lastSeen = 0, userCode = "";
-
-$("loginBtn").onclick = async () => {
-  $("err").textContent = "";
-  const code = toEn($("code").value), phone = toEn($("phone").value);
-  if (!code || !phone) { $("err").textContent = "اكتب الكود ورقم الموبايل"; return; }
-  $("loginBtn").disabled = true;
-  try { await signInWithEmailAndPassword(auth, code + DOMAIN, phone); }
-  catch (e) { $("err").textContent = "الكود أو رقم الموبايل غير صحيح"; }
-  $("loginBtn").disabled = false;
-};
-$("logoutBtn").onclick = () => signOut(auth);
-[$("code"), $("phone")].forEach(i => i.addEventListener("keydown", e => e.key === "Enter" && $("loginBtn").click()));
-
-onAuthStateChanged(auth, user => {
-  unsubs.forEach(u => u()); unsubs = []; store.clear();
-  if (!user) { $("mainView").classList.add("hide"); $("loginView").classList.remove("hide"); return; }
-  userCode = user.email.split("@")[0];
-  if (userCode === "admin") { location.href = "admin.html"; return; }
-  lastSeen = Number(localStorage.getItem("seen_" + userCode) || 0);
-  $("hello").textContent = "كود الموظف: " + userCode;
-  $("loginView").classList.add("hide"); $("mainView").classList.remove("hide");
-  for (const v of ["all", userCode]) {
-    unsubs.push(onSnapshot(query(collection(db, "messages"), where("to", "==", v)), snap => {
-      snap.docChanges().forEach(c => c.type === "removed" ? store.delete(c.doc.id) : store.set(c.doc.id, c.doc.data()));
-      render();
-    }, () => { $("list").innerHTML = '<div class="empty">تعذر تحميل الرسائل</div>'; }));
-  }
-});
-
-function render() {
-  const items = [...store.values()].sort((a, b) => (b.createdAt?.toMillis?.() ?? Date.now()) - (a.createdAt?.toMillis?.() ?? Date.now()));
-  const list = $("list"); list.innerHTML = "";
-  if (!items.length) { list.innerHTML = '<div class="empty">لا توجد رسائل حتى الآن</div>'; return; }
-  let newest = lastSeen;
-  items.forEach(m => {
-    const t = m.createdAt?.toMillis?.() ?? Date.now();
-    const isNew = t > lastSeen; if (t > newest) newest = t;
-    const d = document.createElement("div"); d.className = "msg" + (isNew ? " new" : "");
-    if (isNew) d.appendChild(Object.assign(document.createElement("span"), { className: "dot" }));
-    d.appendChild(Object.assign(document.createElement("h3"), { textContent: m.title || "" }));
-    d.appendChild(Object.assign(document.createElement("p"), { textContent: m.body || "" }));
-    d.appendChild(Object.assign(document.createElement("small"), { textContent: new Date(t).toLocaleString("ar-EG") }));
-    list.appendChild(d);
-  });
-  setTimeout(() => { lastSeen = newest; localStorage.setItem("seen_" + userCode, String(newest)); }, 4000);
-}
-
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
-let deferred;
-addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; $("installBox").classList.remove("hide"); });
-$("installBtn").onclick = async () => { if (deferred) { deferred.prompt(); deferred = null; $("installBox").classList.add("hide"); } };
-</script>
-</body>
-</html>
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import{getFirestore,collection,query,where,onSnapshot,doc,getDoc,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyC2gLmbGX8umoGdewm3ZfEVacHPUSuFefo",authDomain:"afactory-messages.firebaseapp.com",projectId:"afactory-messages",storageBucket:"afactory-messages.firebasestorage.app",messagingSenderId:"500605984674",appId:"1:500605984674:web:c5296569b2fd7a3d6c5cfb"});
+const auth=getAuth(app),db=getFirestore(app),$=i=>document.getElementById(i),D="@afactory.app";
+const en=s=>s.replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).trim();
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+let un=[],msgs=new Map(),reads=new Set(),me="",flt="all";
+$("go").onclick=async()=>{$("err").textContent="";const c=en($("code").value),p=en($("phone").value);if(!c||!p){$("err").textContent="اكتب الكود ورقم الموبايل";return}
+$("go").disabled=true;try{await signInWithEmailAndPassword(auth,c+D,p)}catch{$("err").textContent="الكود أو رقم الموبايل غير صحيح"}$("go").disabled=false};
+$("out").onclick=()=>signOut(auth);
+onAuthStateChanged(auth,async u=>{un.forEach(f=>f());un=[];msgs.clear();reads.clear();
+ if(!u){$("mv").classList.add("hide");$("lv").classList.remove("hide");return}
+ me=u.email.split("@")[0];if(me==="admin"){location.href="admin.html";return}
+ $("lv").classList.add("hide");$("mv").classList.remove("hide");$("nm").textContent="رسائلي";$("cd").textContent="كود "+me;
+ getDoc(doc(db,"employees",me)).then(s=>{if(s.exists()&&s.data().name)$("nm").textContent="أهلاً، "+s.data().name}).catch(()=>{});
+ for(const v of["all",me])un.push(onSnapshot(query(collection(db,"messages"),where("to","==",v)),s=>{s.docChanges().forEach(c=>c.type==="removed"?msgs.delete(c.doc.id):msgs.set(c.doc.id,c.doc.data()));draw()},()=>{$("list").replaceChildren(el("div","empty","تعذر تحميل الرسائل. تأكد من الاتصال وحاول مرة أخرى."))}));
+ un.push(onSnapshot(query(collection(db,"reads"),where("code","==",me)),s=>{reads=new Set(s.docs.map(d=>d.data().m));draw()}))});
+const T=m=>m.createdAt?.toMillis?.()??Date.now();
+function draw(){const all=[...msgs].map(([id,m])=>({id,...m})).sort((a,b)=>T(b)-T(a));
+ const un_=all.filter(m=>!reads.has(m.id)),ur=all.filter(m=>m.p===2);
+ const defs=[["all","الكل",all.length],["unread","غير مقروء",un_.length],["urgent","عاجل",ur.length]];
+ $("chips").replaceChildren(...defs.map(([k,l,n])=>{const b=el("button","chip"+(flt===k?" on":""),l+" "+n);b.onclick=()=>{flt=k;draw()};return b}));
+ const items=flt==="unread"?un_:flt==="urgent"?ur:all,L=$("list");L.replaceChildren();
+ if(!items.length){L.appendChild(el("div","empty",flt==="all"?"لا توجد رسائل بعد. ستظهر هنا فور وصولها.":"لا توجد رسائل في هذا القسم."));return}
+ items.forEach(m=>{const un2=!reads.has(m.id),c=el("div","card p"+(m.p||0)+(un2?" unread":""));c.tabIndex=0;
+  const r=el("div","row"),h=el("div","row");h.style.gap="8px";if(un2)h.appendChild(el("span","dot"));h.appendChild(el("h3","",m.title||""));r.appendChild(h);
+  if(m.p===2||m.p===1)r.appendChild(el("span","tag p"+m.p,m.p===2?"عاجل":"مهم"));
+  c.append(r,el("p","",m.body||""),el("div","meta",new Date(T(m)).toLocaleString("ar-EG",{dateStyle:"medium",timeStyle:"short"})));
+  c.onclick=()=>{c.classList.toggle("open");if(un2)setDoc(doc(db,"reads",m.id+"_"+me),{m:m.id,code:me,at:serverTimestamp()}).catch(()=>{})};L.appendChild(c)})}
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script></body></html>
